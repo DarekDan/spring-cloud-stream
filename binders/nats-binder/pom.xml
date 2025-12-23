@@ -6,6 +6,19 @@
 	<name>spring-cloud-stream-binder-nats-parent</name>
 	<description>NATS Binder Parent</description>
 	<packaging>pom</packaging>
+	<developers>
+		<developer>
+			<id>DarekDan</id>
+			<name>Dariusz Danielewski</name>
+			<properties>
+				<github>DarekDan</github>
+				<githubUrl>https://github.com/DarekDan</githubUrl>
+			</properties>
+			<roles>
+				<role>author</role>
+			</roles>
+		</developer>
+	</developers>
 	<parent>
 		<groupId>org.springframework.cloud</groupId>
 		<artifactId>spring-cloud-stream-binders</artifactId>

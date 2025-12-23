@@ -89,6 +89,29 @@ Alternatively, you can use the Spring Cloud Stream RabbitMQ Starter, as follows:
 </dependency>
 ----
 
+== NATS.io Binder
+=== Usage
+
+To use the NATS.io binder, you can add it to your Spring Cloud Stream application, by using the following Maven dependency:
+
+[source,xml]
+----
+<dependency>
+  <groupId>org.springframework.cloud</groupId>
+  <artifactId>spring-cloud-stream-binder-nats</artifactId>
+</dependency>
+----
+
+Alternatively, you can use the Spring Cloud Stream NATS.io Starter, as follows:
+
+[source,xml]
+----
+<dependency>
+  <groupId>org.springframework.cloud</groupId>
+  <artifactId>spring-cloud-starter-stream-nats</artifactId>
+</dependency>
+----
+
 == Resources
 
 For more information, please visit the https://spring.io/projects/spring-cloud-stream[project website]:
