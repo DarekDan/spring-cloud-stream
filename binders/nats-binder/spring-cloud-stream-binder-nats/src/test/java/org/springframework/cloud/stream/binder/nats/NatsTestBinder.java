@@ -22,10 +22,12 @@ import org.springframework.cloud.stream.binder.ExtendedConsumerProperties;
 import org.springframework.cloud.stream.binder.ExtendedProducerProperties;
 import org.springframework.cloud.stream.binder.nats.config.NatsBinderConfigurationProperties;
 import org.springframework.cloud.stream.binder.nats.properties.NatsConsumerProperties;
+import org.springframework.cloud.stream.binder.Binding;
 import org.springframework.cloud.stream.binder.nats.properties.NatsExtendedBindingProperties;
 import org.springframework.cloud.stream.binder.nats.properties.NatsProducerProperties;
 import org.springframework.cloud.stream.binder.nats.provisioning.NatsProvisioner;
 import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.messaging.MessageChannel;
 
 /**
  * NATS Test Binder.
@@ -52,5 +54,17 @@ public class NatsTestBinder extends
 	@Override
 	public void cleanup() {
 		// No-op for now?
+	}
+
+	@Override
+	public Binding<MessageChannel> bindConsumer(String name, String group, MessageChannel moduleInputChannel,
+			ExtendedConsumerProperties<NatsConsumerProperties> properties) {
+		return getBinder().bindConsumer(name, group, moduleInputChannel, properties);
+	}
+
+	@Override
+	public Binding<MessageChannel> bindProducer(String name, MessageChannel moduleOutputChannel,
+			ExtendedProducerProperties<NatsProducerProperties> properties) {
+		return getBinder().bindProducer(name, moduleOutputChannel, properties);
 	}
 }
