@@ -38,7 +38,8 @@ public class NatsMessageChannelBinderConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public Connection natsConnection(NatsBinderConfigurationProperties properties) throws IOException, InterruptedException {
+	public Connection natsConnection(NatsBinderConfigurationProperties properties)
+			throws IOException, InterruptedException {
 		Options.Builder builder = new Options.Builder()
 				.servers(properties.getServers().split(","))
 				.connectionName(properties.getConnectionName())
@@ -47,11 +48,9 @@ public class NatsMessageChannelBinderConfiguration {
 
 		if (properties.getUsername() != null && properties.getPassword() != null) {
 			builder.userInfo(properties.getUsername(), properties.getPassword());
-		}
-		else if (properties.getToken() != null) {
+		} else if (properties.getToken() != null) {
 			builder.token(properties.getToken());
-		}
-		else if (properties.getCredentialPath() != null) {
+		} else if (properties.getCredentialPath() != null) {
 			builder.authHandler(Nats.credentials(properties.getCredentialPath()));
 		}
 
@@ -68,11 +67,10 @@ public class NatsMessageChannelBinderConfiguration {
 	@ConditionalOnMissingBean
 	public NatsMessageChannelBinder natsMessageChannelBinder(
 			NatsExtendedBindingProperties extendedBindingProperties,
-			NatsBinderConfigurationProperties natsProperties,
 			NatsProvisioner natsProvisioner,
 			Connection connection) {
-		
+
 		return new NatsMessageChannelBinder(extendedBindingProperties,
-				natsProperties, natsProvisioner, connection);
+				natsProvisioner, connection);
 	}
 }

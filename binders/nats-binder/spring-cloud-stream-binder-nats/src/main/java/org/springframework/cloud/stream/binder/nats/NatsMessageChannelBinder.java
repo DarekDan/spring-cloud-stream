@@ -29,7 +29,7 @@ import org.springframework.cloud.stream.binder.BinderSpecificPropertiesProvider;
 import org.springframework.cloud.stream.binder.ExtendedConsumerProperties;
 import org.springframework.cloud.stream.binder.ExtendedProducerProperties;
 import org.springframework.cloud.stream.binder.ExtendedPropertiesBinder;
-import org.springframework.cloud.stream.binder.nats.config.NatsBinderConfigurationProperties;
+
 import org.springframework.cloud.stream.binder.nats.properties.NatsConsumerProperties;
 import org.springframework.cloud.stream.binder.nats.properties.NatsExtendedBindingProperties;
 import org.springframework.cloud.stream.binder.nats.properties.NatsProducerProperties;
@@ -59,7 +59,6 @@ public class NatsMessageChannelBinder extends
 	private BeanFactory beanFactory;
 
 	public NatsMessageChannelBinder(NatsExtendedBindingProperties extendedBindingProperties,
-			NatsBinderConfigurationProperties natsProperties,
 			NatsProvisioner provisioningProvider,
 			Connection connection) {
 		super(new String[0], provisioningProvider);

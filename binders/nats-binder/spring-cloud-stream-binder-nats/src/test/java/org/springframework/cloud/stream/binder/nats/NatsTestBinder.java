@@ -35,7 +35,6 @@ public class NatsTestBinder extends
 
 	public NatsTestBinder(Connection connection) {
 		NatsMessageChannelBinder binder = new NatsMessageChannelBinder(new NatsExtendedBindingProperties(),
-				new NatsBinderConfigurationProperties(),
 				new NatsProvisioner(connection),
 				connection);
 		GenericApplicationContext context = new GenericApplicationContext();
@@ -44,8 +43,7 @@ public class NatsTestBinder extends
 		((org.springframework.beans.factory.BeanFactoryAware) binder).setBeanFactory(context.getBeanFactory());
 		try {
 			binder.afterPropertiesSet();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new RuntimeException("Failed to initialize binder", e);
 		}
 		this.setBinder(binder);
