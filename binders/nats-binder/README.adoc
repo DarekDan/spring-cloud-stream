@@ -1,0 +1,154 @@
+= NATS Binder for Spring Cloud Stream
+
+The NATS Binder allows you to send and receive messages using NATS Core and NATS JetStream.
+
+== Configuration Options
+
+=== Binder Properties
+
+The NATS Binder can be configured using the following properties under `spring.cloud.stream.nats.binder`:
+
+[cols="1,2,1", options="header"]
+|===
+| Property | Description | Default
+
+| `servers`
+| Comma-separated list of NATS server URLs
+| `nats://localhost:4222`
+
+| `username`
+| NATS username
+|
+
+| `password`
+| NATS password
+|
+
+| `token`
+| NATS authentication token
+|
+
+| `credentialPath`
+| Path to NATS credentials file
+|
+
+| `connectionName`
+| Name of the NATS connection
+|
+
+| `maxReconnects`
+| Maximum number of reconnect attempts
+| `-1` (Infinite)
+
+| `reconnectWait`
+| Wait time between reconnect attempts (ms)
+| `2000`
+|===
+
+=== Consumer Properties
+
+These properties can be set per binding in `spring.cloud.stream.nats.bindings.<bindingName>.consumer`:
+
+[cols="1,2,1", options="header"]
+|===
+| Property | Description | Default
+
+| `useJetStream`
+| Whether to use JetStream (auto-detected if `false`)
+| `null`
+
+| `durableName`
+| Durable consumer name (implies JetStream)
+| `null`
+
+| `deliverPolicy`
+| JetStream deliver policy (`All`, `Last`, `New`, etc.)
+| `All`
+
+| `ackPolicy`
+| JetStream acknowledgement policy (`Explicit`, `None`, etc.)
+| `Explicit`
+
+| `maxDeliver`
+| Maximum delivery attempts
+| `-1` (Infinite)
+|===
+
+=== Producer Properties
+
+These properties can be set per binding in `spring.cloud.stream.nats.bindings.<bindingName>.producer`:
+
+[cols="1,2,1", options="header"]
+|===
+| Property | Description | Default
+
+| `useJetStream`
+| Whether to use JetStream for publishing
+| `false`
+
+| `streamName`
+| Target stream name (required for JetStream if subject not unique)
+| `null`
+
+| `ackTimeout`
+| Confirmation timeout duration
+| `2s`
+|===
+
+== Usage Examples
+
+=== Basic Configuration (Core NATS)
+
+[source,yaml]
+----
+spring:
+  cloud:
+    stream:
+      bindings:
+        input:
+          destination: my.subject
+        output:
+          destination: my.subject
+      nats:
+        binder:
+          servers: nats://localhost:4222
+----
+
+=== Using JetStream
+
+To use NATS JetStream, simply configure the consumer properties. NATS Binder automatically creates JetStream consumers if durable names or other JetStream-specific options are used.
+
+[source,yaml]
+----
+spring:
+  cloud:
+    stream:
+      bindings:
+        process-in-0:
+          destination: my.stream.subject
+          group: my-consumer-group
+      nats:
+        bindings:
+          process-in-0:
+            consumer:
+              useJetStream: true
+              durableName: my-durable-consumer
+----
+
+=== Producing to JetStream
+
+[source,yaml]
+----
+spring:
+  cloud:
+    stream:
+      bindings:
+        process-out-0:
+          destination: my.stream.subject
+      nats:
+        bindings:
+          process-out-0:
+            producer:
+              useJetStream: true
+              streamName: MY_STREAM
+----
