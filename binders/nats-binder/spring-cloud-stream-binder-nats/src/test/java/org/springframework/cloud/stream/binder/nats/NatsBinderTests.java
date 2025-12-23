@@ -40,13 +40,15 @@ import org.springframework.messaging.MessageChannel;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Testcontainers(disabledWithoutDocker = true)
-public class NatsBinderTests {
+class NatsBinderTests {
 
-	// Remove @Container annotation to control lifecycle manually if needed, 
-	// OR rely on @Testcontainers(disabledWithoutDocker = true) if available in this validation.
-	// However, disabledWithoutDocker is a feature of the extension. 
-	// Let's stick to the manual check for maximum reliability as the extension might still fail initialization.
-	
+	// Remove @Container annotation to control lifecycle manually if needed,
+	// OR rely on @Testcontainers(disabledWithoutDocker = true) if available in this
+	// validation.
+	// However, disabledWithoutDocker is a feature of the extension.
+	// Let's stick to the manual check for maximum reliability as the extension
+	// might still fail initialization.
+
 	@Container
 	private static final NatsTestContainer natsContainer = new NatsTestContainer();
 
@@ -54,25 +56,28 @@ public class NatsBinderTests {
 	private static NatsTestBinder binder;
 
 	@BeforeAll
-	public static void setup() throws Exception {
+	static void setup() throws Exception {
 		// The @Testcontainers extension handles startup.
-		// If we want to strictly skip if docker is missing without failing the build, 
+		// If we want to strictly skip if docker is missing without failing the build,
 		// we might need to rely on the annotation or manual check.
-		// The error "IllegalStateException: Could not find a valid Docker environment" comes from the extension or init.
-		
-		// To fix the hard crash: We need to assume Docker is available BEFORE the container tries to start.
-		// But static fields init runs early. 
-		
+		// The error "IllegalStateException: Could not find a valid Docker environment"
+		// comes from the extension or init.
+
+		// To fix the hard crash: We need to assume Docker is available BEFORE the
+		// container tries to start.
+		// But static fields init runs early.
+
 		// Let's assume the user DOES want to run tests if possible, but skip if not.
-		// The most robust way is manual start in a static block or BeforeAll with checks.
-		
+		// The most robust way is manual start in a static block or BeforeAll with
+		// checks.
+
 		Options options = new Options.Builder().server(natsContainer.getNatsUrl()).build();
 		connection = Nats.connect(options);
 		binder = new NatsTestBinder(connection);
 	}
 
 	@AfterAll
-	public static void tearDown() throws Exception {
+	static void tearDown() throws Exception {
 		if (connection != null) {
 			connection.close();
 		}
@@ -82,27 +87,32 @@ public class NatsBinderTests {
 	void testBasicPubSub() throws Exception {
 		// Producer
 		DirectChannel output = new DirectChannel();
-		ExtendedProducerProperties<NatsProducerProperties> producerProps = 
-				new ExtendedProducerProperties<>(new NatsProducerProperties());
+		output.setBeanName("output");
+		ExtendedProducerProperties<NatsProducerProperties> producerProps = new ExtendedProducerProperties<>(
+				new NatsProducerProperties());
 		Binding<MessageChannel> producerBinding = binder.bindProducer("test-subject", output, producerProps);
 
 		// Consumer
 		DirectChannel input = new DirectChannel();
-		ExtendedConsumerProperties<NatsConsumerProperties> consumerProps = 
-				new ExtendedConsumerProperties<>(new NatsConsumerProperties());
-		Binding<MessageChannel> consumerBinding = binder.bindConsumer("test-subject", "test-group", input, consumerProps);
+		input.setBeanName("input");
+		ExtendedConsumerProperties<NatsConsumerProperties> consumerProps = new ExtendedConsumerProperties<>(
+				new NatsConsumerProperties());
+		consumerProps.setUseNativeDecoding(true);
+		consumerProps.getExtension().setUseJetStream(false);
+		Binding<MessageChannel> consumerBinding = binder.bindConsumer("test-subject", "test-group", input,
+				consumerProps);
 
 		// Test
 		String testPayload = "hello nats";
 		output.send(MessageBuilder.withPayload(testPayload.getBytes(StandardCharsets.UTF_8)).build());
 
+		// We usually use a specialized channel or a countdown latch handler on the
+		// input channel.
 
-		// We usually use a specialized channel or a countdown latch handler on the input channel.
-		
 		// Let's reimplement with a subscriber on 'input' channel.
 		java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(1);
 		java.util.concurrent.atomic.AtomicReference<Message<?>> receivedInfo = new java.util.concurrent.atomic.AtomicReference<>();
-		
+
 		input.subscribe(message -> {
 			receivedInfo.set(message);
 			latch.countDown();
@@ -110,7 +120,7 @@ public class NatsBinderTests {
 
 		// Resend to ensure subscriber gets it (if timing was off)
 		output.send(MessageBuilder.withPayload(testPayload.getBytes(StandardCharsets.UTF_8)).build());
-		
+
 		boolean received = latch.await(5, java.util.concurrent.TimeUnit.SECONDS);
 		assertThat(received).isTrue();
 		assertThat(receivedInfo.get()).isNotNull();

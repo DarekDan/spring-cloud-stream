@@ -27,6 +27,7 @@ import org.springframework.cloud.stream.binder.nats.properties.NatsConsumerPrope
 import org.springframework.cloud.stream.binder.nats.properties.NatsExtendedBindingProperties;
 import org.springframework.cloud.stream.binder.nats.properties.NatsProducerProperties;
 import org.springframework.cloud.stream.binder.nats.provisioning.NatsProvisioner;
+import org.springframework.context.support.GenericApplicationContext;
 
 /**
  * NATS Test Binder.
@@ -35,10 +36,21 @@ public class NatsTestBinder extends
 		AbstractTestBinder<NatsMessageChannelBinder, ExtendedConsumerProperties<NatsConsumerProperties>, ExtendedProducerProperties<NatsProducerProperties>> {
 
 	public NatsTestBinder(Connection connection) {
-		this.setBinder(new NatsMessageChannelBinder(new NatsExtendedBindingProperties(),
+		NatsMessageChannelBinder binder = new NatsMessageChannelBinder(new NatsExtendedBindingProperties(),
 				new NatsBinderConfigurationProperties(),
 				new NatsProvisioner(connection),
-				connection));
+				connection);
+		GenericApplicationContext context = new GenericApplicationContext();
+		context.refresh();
+		binder.setApplicationContext(context);
+		((org.springframework.beans.factory.BeanFactoryAware) binder).setBeanFactory(context.getBeanFactory());
+		try {
+			binder.afterPropertiesSet();
+		}
+		catch (Exception e) {
+			throw new RuntimeException("Failed to initialize binder", e);
+		}
+		this.setBinder(binder);
 	}
 
 	@Override

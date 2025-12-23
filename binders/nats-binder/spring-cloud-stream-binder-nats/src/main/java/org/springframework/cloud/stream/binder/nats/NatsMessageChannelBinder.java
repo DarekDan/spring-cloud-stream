@@ -17,19 +17,16 @@
 package org.springframework.cloud.stream.binder.nats;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 
 import io.nats.client.Connection;
+import io.nats.client.Message;
 import io.nats.client.Dispatcher;
 import io.nats.client.JetStream;
-import io.nats.client.JetStreamApiException;
-import io.nats.client.JetStreamSubscription;
-import io.nats.client.Message;
 import io.nats.client.PushSubscribeOptions;
-import io.nats.client.api.ConsumerConfiguration;
-import io.nats.client.impl.NatsMessage;
 
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.cloud.stream.binder.AbstractMessageChannelBinder;
 import org.springframework.cloud.stream.binder.BinderSpecificPropertiesProvider;
 import org.springframework.cloud.stream.binder.ExtendedConsumerProperties;
@@ -55,10 +52,12 @@ import org.springframework.messaging.support.MessageBuilder;
  */
 public class NatsMessageChannelBinder extends
 		AbstractMessageChannelBinder<ExtendedConsumerProperties<NatsConsumerProperties>, ExtendedProducerProperties<NatsProducerProperties>, NatsProvisioner>
-		implements ExtendedPropertiesBinder<MessageChannel, NatsConsumerProperties, NatsProducerProperties> {
+		implements ExtendedPropertiesBinder<MessageChannel, NatsConsumerProperties, NatsProducerProperties>,
+		BeanFactoryAware {
 
 	private final NatsExtendedBindingProperties extendedBindingProperties;
 	private final Connection connection;
+	private BeanFactory beanFactory;
 
 	public NatsMessageChannelBinder(NatsExtendedBindingProperties extendedBindingProperties,
 			NatsBinderConfigurationProperties natsProperties,
@@ -73,14 +72,22 @@ public class NatsMessageChannelBinder extends
 	protected MessageHandler createProducerMessageHandler(ProducerDestination destination,
 			ExtendedProducerProperties<NatsProducerProperties> producerProperties,
 			MessageChannel errorChannel) throws Exception {
-		return new NatsMessageHandler(destination.getName(), producerProperties, connection);
+		NatsMessageHandler handler = new NatsMessageHandler(destination.getName(), producerProperties, connection);
+		if (this.beanFactory != null) {
+			handler.setBeanFactory(this.beanFactory);
+		}
+		return handler;
 	}
 
 	@Override
 	protected MessageProducer createConsumerEndpoint(ConsumerDestination destination,
 			String group,
 			ExtendedConsumerProperties<NatsConsumerProperties> properties) throws Exception {
-		return new NatsMessageProducer(destination.getName(), group, properties, connection);
+		NatsMessageProducer producer = new NatsMessageProducer(destination.getName(), group, properties, connection);
+		if (this.beanFactory != null) {
+			producer.setBeanFactory(this.beanFactory);
+		}
+		return producer;
 	}
 
 	@Override
@@ -101,6 +108,11 @@ public class NatsMessageChannelBinder extends
 	@Override
 	public Class<? extends BinderSpecificPropertiesProvider> getExtendedPropertiesEntryClass() {
 		return this.extendedBindingProperties.getExtendedPropertiesEntryClass();
+	}
+
+	@Override
+	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+		this.beanFactory = beanFactory;
 	}
 
 	/**
@@ -127,12 +139,10 @@ public class NatsMessageChannelBinder extends
 			try {
 				if (jetStream != null) {
 					jetStream.publish(subject, (byte[]) message.getPayload());
-				}
-				else {
+				} else {
 					connection.publish(subject, (byte[]) message.getPayload());
 				}
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				throw new MessagingException(message, "Failed to publish to NATS subject: " + subject, e);
 			}
 		}
@@ -166,34 +176,34 @@ public class NatsMessageChannelBinder extends
 		@Override
 		protected void doStart() {
 			try {
-				if (Boolean.TRUE.equals(properties.getExtension().getUseJetStream()) || (group != null && properties.getExtension().getUseJetStream() == null)) {
+				if (Boolean.TRUE.equals(properties.getExtension().getUseJetStream())
+						|| (group != null && properties.getExtension().getUseJetStream() == null)) {
 					// Use JetStream
 					JetStream js = connection.jetStream();
 					PushSubscribeOptions.Builder optionsBuilder = PushSubscribeOptions.builder();
-					
+
 					if (group != null) {
-						optionsBuilder.durable(properties.getExtension().getDurableName() != null ? 
-								properties.getExtension().getDurableName() : group);
+						optionsBuilder.durable(properties.getExtension().getDurableName() != null
+								? properties.getExtension().getDurableName()
+								: group);
 					}
-					
+
 					// Configure consumer options...
 					// This is a simplified implementation
-					
+
 					this.dispatcher = connection.createDispatcher();
-					js.subscribe(subject, group, this.dispatcher, this::handleNatsMessage, false, optionsBuilder.build());
-				}
-				else {
+					js.subscribe(subject, group, this.dispatcher, this::handleNatsMessage, false,
+							optionsBuilder.build());
+				} else {
 					// core NATS
 					this.dispatcher = connection.createDispatcher(this::handleNatsMessage);
 					if (group != null) {
 						this.dispatcher.subscribe(subject, group);
-					}
-					else {
+					} else {
 						this.dispatcher.subscribe(subject);
 					}
 				}
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				throw new MessagingException("Failed to start NATS consumer", e);
 			}
 		}
@@ -212,8 +222,7 @@ public class NatsMessageChannelBinder extends
 						.setHeader("nats_replyTo", msg.getReplyTo())
 						.build());
 				msg.ack();
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				// Log error
 				logger.error(e, "Failed to process NATS message");
 				msg.nak();
