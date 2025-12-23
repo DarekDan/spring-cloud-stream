@@ -36,6 +36,7 @@ public class NatsExtendedBindingProperties extends
 		return DEFAULTS_PREFIX;
 	}
 
+	@Override
 	public Map<String, NatsBindingProperties> getBindings() {
 		return this.doGetBindings();
 	}

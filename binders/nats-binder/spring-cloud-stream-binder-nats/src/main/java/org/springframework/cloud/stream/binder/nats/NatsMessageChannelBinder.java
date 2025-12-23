@@ -168,11 +168,6 @@ public class NatsMessageChannelBinder extends
 		}
 
 		@Override
-		protected void onInit() {
-			super.onInit();
-		}
-
-		@Override
 		protected void doStart() {
 			try {
 				if (Boolean.TRUE.equals(properties.getExtension().getUseJetStream())
