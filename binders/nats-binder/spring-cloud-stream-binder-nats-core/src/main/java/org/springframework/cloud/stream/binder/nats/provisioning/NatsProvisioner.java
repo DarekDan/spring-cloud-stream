@@ -20,7 +20,6 @@ import io.nats.client.Connection;
 import io.nats.client.JetStreamManagement;
 import io.nats.client.api.StreamConfiguration;
 import io.nats.client.api.StreamInfo;
-
 import org.springframework.cloud.stream.binder.ExtendedConsumerProperties;
 import org.springframework.cloud.stream.binder.ExtendedProducerProperties;
 import org.springframework.cloud.stream.binder.nats.properties.NatsConsumerProperties;

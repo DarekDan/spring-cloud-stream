@@ -16,14 +16,11 @@
 
 package org.springframework.cloud.stream.binder.nats;
 
-import java.io.IOException;
-
 import io.nats.client.Connection;
-import io.nats.client.Message;
 import io.nats.client.Dispatcher;
 import io.nats.client.JetStream;
+import io.nats.client.Message;
 import io.nats.client.PushSubscribeOptions;
-
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -46,6 +43,8 @@ import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.messaging.MessagingException;
 import org.springframework.messaging.support.MessageBuilder;
+
+import java.io.IOException;
 
 /**
  * NATS Binder implementation.

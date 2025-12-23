@@ -16,10 +16,10 @@
 
 package org.springframework.cloud.stream.binder.nats;
 
-import java.time.Duration;
-
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
+
+import java.time.Duration;
 
 /**
  * NATS Test Container.

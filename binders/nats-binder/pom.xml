@@ -14,6 +14,7 @@
 	<properties>
 		<java.version>17</java.version>
 		<nats-client.version>2.23.0</nats-client.version>
+		<file.encoding>UTF-8</file.encoding>
 		<maven-checkstyle-plugin.failsOnError>true</maven-checkstyle-plugin.failsOnError>
         <maven-checkstyle-plugin.failsOnViolation>true
         </maven-checkstyle-plugin.failsOnViolation>

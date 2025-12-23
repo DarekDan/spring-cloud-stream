@@ -17,11 +17,9 @@
 package org.springframework.cloud.stream.binder.nats;
 
 import io.nats.client.Connection;
-
 import org.springframework.cloud.stream.binder.AbstractTestBinder;
 import org.springframework.cloud.stream.binder.ExtendedConsumerProperties;
 import org.springframework.cloud.stream.binder.ExtendedProducerProperties;
-import org.springframework.cloud.stream.binder.nats.NatsMessageChannelBinder;
 import org.springframework.cloud.stream.binder.nats.config.NatsBinderConfigurationProperties;
 import org.springframework.cloud.stream.binder.nats.properties.NatsConsumerProperties;
 import org.springframework.cloud.stream.binder.nats.properties.NatsExtendedBindingProperties;
